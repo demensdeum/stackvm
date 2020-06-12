@@ -1,6 +1,15 @@
-const OPCODE_START_PRINT_STACK = 'З'
-const OPCODE_END_PRINT_STACK = 'з'
-const OPCODE_SUM = 'С'
+const OPCODE_START_PRINT_STACK = 'З';
+const OPCODE_END_PRINT_STACK = 'з';
+const OPCODE_SUM = '+';
+const OPCODE_SUB = '-';
+const OPCODE_MUL = '*';
+const OPCODE_DIV = '/';
+const OPCODE_CALCULATOR_MODE = "К";
+const STACKVM_ARITHMETIC_OPERATIONS = [OPCODE_SUM, OPCODE_SUB, OPCODE_DIV, OPCODE_MUL];
+
+function reverseString(string) {
+    return string.split("").reverse().join("");
+}
 
 class Node {
 
@@ -40,7 +49,6 @@ class StackVM {
   }
 
   interpret(program) {
-    console.log("Trying to interpret program: " + program);
     for (let character of program) {
       if (character == OPCODE_START_PRINT_STACK) {
         for (let stackFirst = this.stack.pop(); stackFirst.value != OPCODE_END_PRINT_STACK; stackFirst = this.stack.pop()) {
@@ -49,10 +57,67 @@ class StackVM {
         process.stdout.write("\n")
       }
       else if (character == OPCODE_SUM) {
-        let lhs = parseInt(this.stack.pop().value);
         let rhs = parseInt(this.stack.pop().value);
+        let lhs = parseInt(this.stack.pop().value);
         let result = lhs + rhs;
         this.stack.push(result);
+      }
+      else if (character == OPCODE_SUB) {
+        let rhs = parseInt(this.stack.pop().value);
+        let lhs = parseInt(this.stack.pop().value);
+        let result = lhs - rhs;
+        this.stack.push(result);
+      }
+      else if (character == OPCODE_MUL) {
+        let rhs = parseInt(this.stack.pop().value);
+        let lhs = parseInt(this.stack.pop().value);
+        let result = lhs * rhs;
+        this.stack.push(result);
+      }
+      else if (character == OPCODE_DIV) {
+        let rhs = parseInt(this.stack.pop().value);
+        let lhs = parseInt(this.stack.pop().value);
+        let result = lhs / rhs;
+        this.stack.push(result);
+      }
+      else if (character == OPCODE_CALCULATOR_MODE) {
+        const readline = require('readline');
+        const promptInterface = readline.createInterface({
+          input: process.stdin,
+          output: process.stdout
+        });
+        promptInterface.question('Calculator mode: ', (inputString) => {
+          promptInterface.close();
+          console.log("Trying to convert to RPN: " + inputString);
+          var outputProgram = "";
+          for (let calculatorModeCharacter of inputString) {
+            let parsedInt = parseInt(calculatorModeCharacter);
+            if (isNaN(parsedInt) == false) {
+              outputProgram += String(parsedInt);
+            }
+            else {
+              let first = this.stack.pop();
+              if (STACKVM_ARITHMETIC_OPERATIONS.includes(calculatorModeCharacter)) {
+                if (STACKVM_ARITHMETIC_OPERATIONS.includes(first)) {
+                  outputProgram += first.value;
+                }
+                else if (first != null) {
+                  this.stack.push(first.value);
+                }
+                this.stack.push(calculatorModeCharacter);
+              }
+            }
+          }
+          for (let stackFirst = this.stack.pop(); stackFirst != null; stackFirst = this.stack.pop()) {
+            outputProgram += stackFirst.value;
+          }
+          outputProgram =
+          OPCODE_END_PRINT_STACK +
+          outputProgram +
+          reverseString("Result: ") +
+          OPCODE_START_PRINT_STACK;
+          this.interpret(outputProgram);
+        });
       }
       else {
         this.stack.push(character);
@@ -63,4 +128,9 @@ class StackVM {
 }
 
 const stackVM = new StackVM();
-stackVM.interpret(OPCODE_END_PRINT_STACK + "MVkcatS olleH" + OPCODE_START_PRINT_STACK + OPCODE_END_PRINT_STACK + "23" + OPCODE_SUM + OPCODE_START_PRINT_STACK);
+stackVM.interpret(
+  OPCODE_END_PRINT_STACK +
+  reverseString("Hello StackVM") +
+  OPCODE_START_PRINT_STACK +
+  OPCODE_CALCULATOR_MODE
+);
