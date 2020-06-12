@@ -1,4 +1,6 @@
-const OPCODE_PRINT_STACK = 1
+const OPCODE_START_PRINT_STACK = 'З'
+const OPCODE_END_PRINT_STACK = 'з'
+const OPCODE_SUM = 'С'
 
 class Node {
 
@@ -40,12 +42,17 @@ class StackVM {
   interpret(program) {
     console.log("Trying to interpret program: " + program);
     for (let character of program) {
-      if (character == OPCODE_PRINT_STACK) {
-        var output = "";
-        for (let stackFirst = this.stack.pop(); stackFirst != null; stackFirst = this.stack.pop()) {
-          output += stackFirst.value;
+      if (character == OPCODE_START_PRINT_STACK) {
+        for (let stackFirst = this.stack.pop(); stackFirst.value != OPCODE_END_PRINT_STACK; stackFirst = this.stack.pop()) {
+          process.stdout.write(String(stackFirst.value));
         }
-        console.log(output)
+        process.stdout.write("\n")
+      }
+      else if (character == OPCODE_SUM) {
+        let lhs = parseInt(this.stack.pop().value);
+        let rhs = parseInt(this.stack.pop().value);
+        let result = lhs + rhs;
+        this.stack.push(result);
       }
       else {
         this.stack.push(character);
@@ -56,4 +63,4 @@ class StackVM {
 }
 
 const stackVM = new StackVM();
-stackVM.interpret("MVkcatS olleH" + OPCODE_PRINT_STACK);
+stackVM.interpret(OPCODE_END_PRINT_STACK + "MVkcatS olleH" + OPCODE_START_PRINT_STACK + OPCODE_END_PRINT_STACK + "23" + OPCODE_SUM + OPCODE_START_PRINT_STACK);
