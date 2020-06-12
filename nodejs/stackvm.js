@@ -49,6 +49,7 @@ class StackVM {
   }
 
   interpret(program) {
+    console.log("Interpret: " + program);
     for (let character of program) {
       if (character == OPCODE_START_PRINT_STACK) {
         for (let stackFirst = this.stack.pop(); stackFirst.value != OPCODE_END_PRINT_STACK; stackFirst = this.stack.pop()) {
@@ -88,16 +89,22 @@ class StackVM {
         });
         promptInterface.question('Calculator mode: ', (inputString) => {
           promptInterface.close();
-          console.log("Trying to convert to RPN: " + inputString);
           var outputProgram = "";
           for (let calculatorModeCharacter of inputString) {
             let parsedInt = parseInt(calculatorModeCharacter);
             if (isNaN(parsedInt) == false) {
               outputProgram += String(parsedInt);
             }
-            else {
-              let first = this.stack.pop();
-              if (STACKVM_ARITHMETIC_OPERATIONS.includes(calculatorModeCharacter)) {
+            else if (calculatorModeCharacter == '(') {
+              this.stack.push(calculatorModeCharacter);
+            }
+            else if (calculatorModeCharacter == ')') {
+              for (let stackFirst = this.stack.pop(); stackFirst.value != '('; stackFirst = this.stack.pop()) {
+                outputProgram += String(stackFirst.value);
+              }
+            }
+            else if (STACKVM_ARITHMETIC_OPERATIONS.includes(calculatorModeCharacter)) {
+                let first = this.stack.pop();
                 if (STACKVM_ARITHMETIC_OPERATIONS.includes(first)) {
                   outputProgram += first.value;
                 }
@@ -105,9 +112,9 @@ class StackVM {
                   this.stack.push(first.value);
                 }
                 this.stack.push(calculatorModeCharacter);
-              }
             }
           }
+
           for (let stackFirst = this.stack.pop(); stackFirst != null; stackFirst = this.stack.pop()) {
             outputProgram += stackFirst.value;
           }
