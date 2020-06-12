@@ -7,6 +7,13 @@ const OPCODE_DIV = '/';
 const OPCODE_CALCULATOR_MODE = "К";
 const STACKVM_ARITHMETIC_OPERATIONS = [OPCODE_SUM, OPCODE_SUB, OPCODE_DIV, OPCODE_MUL];
 
+const STACKVM_OPERATION_PRIORITIES = {
+  '+' : 6,
+  '-' : 6,
+  '*' : 5,
+  '/' : 5
+};
+
 function reverseString(string) {
     return string.split("").reverse().join("");
 }
@@ -105,11 +112,16 @@ class StackVM {
             }
             else if (STACKVM_ARITHMETIC_OPERATIONS.includes(calculatorModeCharacter)) {
                 let first = this.stack.pop();
-                if (STACKVM_ARITHMETIC_OPERATIONS.includes(first)) {
-                  outputProgram += first.value;
-                }
-                else if (first != null) {
-                  this.stack.push(first.value);
+                if (first != null) {
+                    let operation = first.value
+                    let lhsPriority = STACKVM_OPERATION_PRIORITIES[calculatorModeCharacter];
+                    let rhsPriority = STACKVM_OPERATION_PRIORITIES[operation];
+                    if (STACKVM_ARITHMETIC_OPERATIONS.includes(operation) && lhsPriority >= rhsPriority) {
+                      outputProgram += first.value;
+                    }
+                    else {
+                      this.stack.push(operation);
+                    }
                 }
                 this.stack.push(calculatorModeCharacter);
             }
