@@ -1,5 +1,5 @@
-const OPCODE_START_PRINT_STACK = 'З';
-const OPCODE_END_PRINT_STACK = 'з';
+const OPCODE_START_PRINT_STACK = 'П';
+const OPCODE_END_PRINT_STACK = 'п';
 const OPCODE_SUM = '+';
 const OPCODE_SUB = '-';
 const OPCODE_MUL = '*';
